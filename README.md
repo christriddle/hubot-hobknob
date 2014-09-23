@@ -6,13 +6,13 @@ A hubot script for the Hobknob feature toggle service
 
 In hubot project repo, run:
 
-`npm install hobknob-hubot --save`
+`npm install hubot-hobknob --save`
 
-Then add **hobknob-hubot** to your `external-scripts.json`:
+Then add **hubot-hobknob** to your `external-scripts.json`:
 
 ```json
 [
-  "hobknob-hubot"
+  "hubot-hobknob"
 ]
 ```
 
