@@ -19,21 +19,31 @@ _ = require "underscore"
 module.exports = (robot) ->
 
   host = process.env.HUBOT_HOBKNOB_HOST
-  port = process.env.HUBOT_HOBKNOB_HOST
+  port = process.env.HUBOT_HOBKNOB_PORT
   url = "http://" + host + ":" + port + "/v2/keys/v1/toggles/"
 
-  robot.respond /show feature toggles for (\S*)$/, (msg) ->
-    application = msg.match[1]
-    msg.http(url + application).get (err, res, body) ->
+  robot.respond /(show|get)? (feature )?toggles for (\S+)$/i, (msg) ->
+    application = msg.match[3]
+    msg.http(url + application).get() (err, res, body) ->
       if err?
-        if res.code == 200
-          msg.send "No feature toggles found for " + application
-        else
-          msg.send "Error when getting feature toggles for " + application + ": " + err
+        msg.send "Error when getting feature toggles for " + application + ": " + err
         return
 
-      var bodyJson = JSON.parse(body)
-      var nodes = bodyJson.node.nodes
+      bodyJson = JSON.parse(body)
 
-      toggles = _.chain(nodes).map((x) -> [x.key, x.value == "true"]).object().value()
-      msg.send JSON.stringify(toggles)
+      if bodyJson.errorCode?
+        if bodyJson.errorCode == 100
+          msg.send "Application not found: " + application
+        else
+          msg.send "Error when getting feature toggles for " + application + ": " + bodyJson.message
+        return
+
+      nodes = bodyJson.node.nodes
+
+      toggles = _.chain(nodes).map((x) ->
+        keySplit = x.key.split "/"
+        toggleName = keySplit[keySplit.length - 1]
+        [toggleName, x.value == "true"]).object().value()
+
+      msg.send application + " toggles:"
+      msg.send JSON.stringify(toggles, undefined, 2)
