@@ -1,4 +1,4 @@
-# hobknob-hubot
+# hubot-hobknob
 
 A hubot script for the Hobknob feature toggle service
 
